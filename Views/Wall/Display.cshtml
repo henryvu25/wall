@@ -1,0 +1,27 @@
+@{
+    ViewData["Title"] = "The Wall";
+}
+
+@{
+    foreach(var i in ViewBag.User)
+    {
+        <h4>Welcome @i.first!</h4>
+        <a href="logout"><button>Logout</button></a>
+        <h1>The Wall - Messages & Comments</h1>
+
+        <form action="message" method="post">
+            <textarea name="message" cols="100" rows="10" placeholder="Enter Message..."></textarea>
+            <input type="hidden" name="id" value="@i.id">
+            <p><button type="submit">Post</button></p>
+        </form>
+    }
+    
+}
+@{
+    foreach(var m in ViewBag.messages)
+    {
+        <p>@[""]</p>
+        <p>@m["message"]</p>
+    }
+}
+

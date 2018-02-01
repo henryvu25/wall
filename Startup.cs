@@ -4,6 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
+using wall_proj.Models;
+using MySQL.Data.EntityFrameworkCore;
+using MySQL.Data.EntityFrameworkCore.Extensions;
 
 namespace wall_proj
 {
@@ -17,6 +20,7 @@ namespace wall_proj
             services.AddSession();
             services.Configure<MySqlOptions>(Configuration.GetSection("DBInfo"));
             services.AddScoped<DbConnector>();
+            services.AddDbContext<WallContext>(options => options.UseMySQL(Configuration["DBInfo:ConnectionString"]));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
