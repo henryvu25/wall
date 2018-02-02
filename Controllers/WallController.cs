@@ -21,9 +21,15 @@ namespace wall_proj.Controllers
         [Route("display")]
         public IActionResult Display()
         {
-            int? currId = HttpContext.Session.GetInt32("currUser");
-            User currUser = _context.users.SingleOrDefault(user => user.id == currId);
-            List<Message> allMess = _context.messages.ToList();
+            int? currId = HttpContext.Session.GetInt32("currId");
+            if(currId == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            User currUser = _context.users.Where(user => user.userid == currId).SingleOrDefault();
+            List<Message> allMess = _context.messages.OrderByDescending(m => m.messageid)
+                       .Include(mess => mess.user).Include(mess => mess.comments)
+                       .ToList();
             ViewBag.user = currUser;
             ViewBag.messages = allMess;
             return View();
@@ -32,13 +38,28 @@ namespace wall_proj.Controllers
         [Route("message")]
         public IActionResult Message(string message)
         {
-            int? currId = HttpContext.Session.GetInt32("currUser");
+            int? currId = HttpContext.Session.GetInt32("currId");
             Message newMess = new Message
             {
                 message = message,
-                users_id = currId
+                userid = currId
             };
             _context.Add(newMess);
+            _context.SaveChanges();
+            return RedirectToAction("Display");
+        }
+        [HttpPost]
+        [Route("comment")]
+        public IActionResult Comment(string comment, int messageid)
+        {
+            int? currId = HttpContext.Session.GetInt32("currId");
+            Comment newCom = new Comment
+            {
+                comment = comment,
+                userid = currId,
+                messageid = messageid
+            };
+            _context.Add(newCom);
             _context.SaveChanges();
             return RedirectToAction("Display");
         }

@@ -23,13 +23,21 @@ namespace wall_proj.Controllers
         public IActionResult Index()
         {
             ViewBag.errors = ModelState.Values;
+
+            string incorrectLogin = HttpContext.Session.GetString("incorrect");
+            ViewBag.incorrect = incorrectLogin;
+
+            string userExists = HttpContext.Session.GetString("existing");
+            ViewBag.exists = userExists;
             return View();
         }
         [HttpPost]
         [Route("register")]
         public IActionResult Register(RegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            User existingUser = _context.users.SingleOrDefault(user => user.email == model.email);
+
+            if (ModelState.IsValid && existingUser == null)
             {
                 User newUser = new User
                 {
@@ -38,12 +46,17 @@ namespace wall_proj.Controllers
                     email = model.email,
                     password = model.password
                 };
-                _context.Add(newUser);
+                _context.users.Add(newUser);
                 _context.SaveChanges();
                 User currUser = _context.users.SingleOrDefault(user => user.email == model.email);
-                int currId = currUser.id;
+                int currId = currUser.userid;
                 HttpContext.Session.SetInt32("currId", currId);
                 return RedirectToAction("Display", "Wall");
+            }
+            if(existingUser != null)
+            {
+                HttpContext.Session.SetString("existing", "Email has already been used");
+                return RedirectToAction("Index");
             }
             ViewBag.errors = ModelState.Values;
             return View("Index");
@@ -53,9 +66,17 @@ namespace wall_proj.Controllers
         public IActionResult Login(string email, string password)
         {
             User currUser = _context.users.SingleOrDefault(user => user.email == email && user.password == password);
-            int currId = currUser.id;
-            HttpContext.Session.SetInt32("currId", currId);
-            return RedirectToAction("Display", "Wall");
+            if (currUser != null)
+            {
+                int currId = currUser.userid;
+                HttpContext.Session.SetInt32("currId", currId);
+                return RedirectToAction("Display", "Wall");
+            }
+            else
+            {
+                HttpContext.Session.SetString("incorrect", "Email and/or password are incorrect");
+            }
+            return RedirectToAction("Index");
         }
         [HttpGet]
         [Route("logout")]

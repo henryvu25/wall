@@ -1,14 +1,19 @@
 using System;
+using System.Collections.Generic;
 
 namespace wall_proj.Models
 {
     public class Message : BaseEntity
     {
-        public int id { get;set; }
+        public int messageid { get;set; }
         public string message { get;set; }
-        public int? users_id { get;set; }
-        public DateTime created { get;set; }
-        public DateTime updated { get;set; }
 
+        public int? userid { get;set; }
+        public User user { get;set; }
+        public List<Comment> comments { get;set; }
+        public Message ()
+        {
+            comments = new List<Comment>();
+        }
     }
 }
